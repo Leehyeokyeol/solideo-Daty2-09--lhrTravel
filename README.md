@@ -38,8 +38,9 @@
 ### 사전 요구사항
 
 - Node.js 18 이상
-- Kakao Developers 계정
-- Kakao Maps API Keys (JavaScript 키 + REST API 키)
+- (선택사항) Kakao Developers 계정 및 API Keys
+
+> 💡 **API 키 없이도 사용 가능!** 데모 모드로 모든 기능을 테스트할 수 있습니다.
 
 ### Kakao Maps API 설정
 
@@ -53,12 +54,23 @@
    - 웹 플랫폼 추가
    - 사이트 도메인 등록 (개발: `http://localhost:3000`)
 
-### 설치
+### 빠른 시작 (API 키 없이)
 
 ```bash
 # 의존성 설치
 npm install
 
+# 개발 서버 실행 (데모 모드)
+npm run dev
+```
+
+앱이 자동으로 **🎭 데모 모드**로 실행되어 더미 데이터로 모든 기능을 테스트할 수 있습니다!
+
+### 실제 API 사용하기 (선택사항)
+
+실제 Kakao Maps API를 사용하려면:
+
+```bash
 # 환경 변수 설정
 cp .env.example .env
 # .env 파일에 Kakao API Keys 입력
