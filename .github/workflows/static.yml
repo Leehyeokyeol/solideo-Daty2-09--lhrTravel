@@ -1,43 +1,61 @@
-# Simple workflow for deploying static content to GitHub Pages
-name: Deploy static content to Pages
+# Vite 앱을 빌드하고 GitHub Pages에 배포
+name: Deploy TravelMate to GitHub Pages
 
 on:
-  # Runs on pushes targeting the default branch
+  # 브랜치에 푸시할 때 자동 실행
   push:
     branches: ["claude/travel-personalization-app-011CUrLzgN3vg3DDS44xATrG"]
 
-  # Allows you to run this workflow manually from the Actions tab
+  # Actions 탭에서 수동 실행 가능
   workflow_dispatch:
 
-# Sets permissions of the GITHUB_TOKEN to allow deployment to GitHub Pages
+# GitHub Pages 배포 권한 설정
 permissions:
   contents: read
   pages: write
   id-token: write
 
-# Allow only one concurrent deployment, skipping runs queued between the run in-progress and latest queued.
-# However, do NOT cancel in-progress runs as we want to allow these production deployments to complete.
+# 동시 배포 방지
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
-  # Single deploy job since we're just deploying
-  deploy:
+  # 빌드 및 배포
+  build-and-deploy:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: 코드 체크아웃
         uses: actions/checkout@v4
-      - name: Setup Pages
+
+      - name: Node.js 설정
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: 의존성 설치
+        run: npm ci
+
+      - name: Vite 앱 빌드
+        run: npm run build
+        env:
+          # 데모 모드로 빌드 (API 키 없이 작동)
+          VITE_KAKAO_API_KEY: ''
+          VITE_KAKAO_REST_API_KEY: ''
+
+      - name: GitHub Pages 설정
         uses: actions/configure-pages@v5
-      - name: Upload artifact
+
+      - name: 빌드 결과물 업로드
         uses: actions/upload-pages-artifact@v3
         with:
-          # Upload entire repository
-          path: '.'
-      - name: Deploy to GitHub Pages
+          # dist 폴더만 업로드
+          path: './dist'
+
+      - name: GitHub Pages에 배포
         id: deployment
         uses: actions/deploy-pages@v4
