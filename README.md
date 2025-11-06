@@ -1,6 +1,14 @@
 # TravelMate - AI 기반 맞춤형 여행 플래너
 
+[![Deploy to GitHub Pages](https://github.com/Leehyeokyeol/solideo-Daty2-09--lhrTravel/actions/workflows/static.yml/badge.svg)](https://github.com/Leehyeokyeol/solideo-Daty2-09--lhrTravel/actions/workflows/static.yml)
+
 > 실시간 대중교통 연계와 스마트 추천으로 완벽한 여행을 계획하세요
+
+## 🌐 라이브 데모
+
+**👉 [TravelMate 바로 가기](https://Leehyeokyeol.github.io/solideo-Daty2-09--lhrTravel/)**
+
+API 키 없이 데모 모드로 모든 기능을 체험해보세요!
 
 ## 주요 기능
 
