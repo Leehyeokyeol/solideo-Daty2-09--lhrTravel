@@ -6,6 +6,8 @@ interface UseKakaoMapsOptions {
   level?: number;
 }
 
+const IS_DEMO_MODE = !import.meta.env.VITE_KAKAO_API_KEY || !import.meta.env.VITE_KAKAO_REST_API_KEY;
+
 export function useKakaoMaps(
   mapRef: React.RefObject<HTMLDivElement>,
   options: UseKakaoMapsOptions = {}
@@ -26,7 +28,17 @@ export function useKakaoMaps(
       try {
         await loadKakaoMaps();
 
-        if (!mapRef.current || !isMounted || !window.kakao) return;
+        if (!mapRef.current || !isMounted) return;
+
+        // 데모 모드: 더미 지도 객체 생성
+        if (IS_DEMO_MODE) {
+          console.log('🎭 데모 모드: 가상 지도 사용');
+          setMap({ isDemoMode: true });
+          setIsLoaded(true);
+          return;
+        }
+
+        if (!window.kakao) return;
 
         const mapCenter = new window.kakao.maps.LatLng(center.lat, center.lng);
         const mapInstance = new window.kakao.maps.Map(mapRef.current, {
@@ -38,7 +50,7 @@ export function useKakaoMaps(
         setIsLoaded(true);
       } catch (err) {
         console.error('Failed to initialize map:', err);
-        setError('지도를 불러오는데 실패했습니다. API 키를 확인해주세요.');
+        setError('지도를 불러오는데 실패했습니다.');
       }
     }
 
@@ -52,7 +64,12 @@ export function useKakaoMaps(
   // Add marker
   const addMarker = useCallback(
     (position: { lat: number; lng: number }, options?: any) => {
-      if (!map || !window.kakao) return null;
+      if (!map) return null;
+      if (IS_DEMO_MODE) {
+        console.log('🎭 데모 모드: 마커 추가', position);
+        return { isDemoMarker: true, position };
+      }
+      if (!window.kakao) return null;
 
       const markerPosition = new window.kakao.maps.LatLng(position.lat, position.lng);
 
@@ -82,14 +99,24 @@ export function useKakaoMaps(
 
   // Clear all markers
   const clearMarkers = useCallback(() => {
-    markersRef.current.forEach((marker) => marker.setMap(null));
+    if (IS_DEMO_MODE) {
+      console.log('🎭 데모 모드: 마커 초기화');
+      markersRef.current = [];
+      return;
+    }
+    markersRef.current.forEach((marker) => marker.setMap?.(null));
     markersRef.current = [];
   }, []);
 
   // Show polyline on map
   const showPolyline = useCallback(
     (path: { lat: number; lng: number }[], options?: any) => {
-      if (!map || !window.kakao) return;
+      if (!map) return;
+      if (IS_DEMO_MODE) {
+        console.log('🎭 데모 모드: 경로선 표시', path.length, '포인트');
+        return;
+      }
+      if (!window.kakao) return;
 
       clearPolylines();
 
@@ -113,14 +140,20 @@ export function useKakaoMaps(
 
   // Clear polylines
   const clearPolylines = useCallback(() => {
-    polylinesRef.current.forEach((polyline) => polyline.setMap(null));
+    if (IS_DEMO_MODE) {
+      polylinesRef.current = [];
+      return;
+    }
+    polylinesRef.current.forEach((polyline) => polyline.setMap?.(null));
     polylinesRef.current = [];
   }, []);
 
   // Pan to location
   const panTo = useCallback(
     (location: { lat: number; lng: number }) => {
-      if (!map || !window.kakao) return;
+      if (!map) return;
+      if (IS_DEMO_MODE) return;
+      if (!window.kakao) return;
       const moveLatLon = new window.kakao.maps.LatLng(location.lat, location.lng);
       map.panTo(moveLatLon);
     },
@@ -130,7 +163,9 @@ export function useKakaoMaps(
   // Fit bounds to show all markers
   const fitBounds = useCallback(
     (locations: { lat: number; lng: number }[]) => {
-      if (!map || !window.kakao || locations.length === 0) return;
+      if (!map || locations.length === 0) return;
+      if (IS_DEMO_MODE) return;
+      if (!window.kakao) return;
 
       const bounds = new window.kakao.maps.LatLngBounds();
       locations.forEach((location) => {
@@ -146,7 +181,8 @@ export function useKakaoMaps(
   const setLevel = useCallback(
     (newLevel: number) => {
       if (!map) return;
-      map.setLevel(newLevel);
+      if (IS_DEMO_MODE) return;
+      map.setLevel?.(newLevel);
     },
     [map]
   );

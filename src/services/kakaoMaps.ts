@@ -1,16 +1,31 @@
 import axios from 'axios';
 import { Place, Location, Recommendation } from '../types';
+import { MOCK_PLACES, MOCK_RECOMMENDATIONS, createMockRoute } from './mockData';
 
 const KAKAO_API_KEY = import.meta.env.VITE_KAKAO_API_KEY || '';
 const REST_API_KEY = import.meta.env.VITE_KAKAO_REST_API_KEY || '';
 
+// 데모 모드: API 키가 없으면 더미 데이터 사용
+const IS_DEMO_MODE = !KAKAO_API_KEY || !REST_API_KEY;
+
 let kakaoLoaded = false;
+
+if (IS_DEMO_MODE) {
+  console.log('🎭 데모 모드로 실행 중 - API 키 없이 더미 데이터 사용');
+}
 
 /**
  * Load Kakao Maps SDK
  */
 export async function loadKakaoMaps(): Promise<void> {
   if (kakaoLoaded) return;
+
+  // 데모 모드: 지도 SDK 로드 생략
+  if (IS_DEMO_MODE) {
+    kakaoLoaded = true;
+    console.log('🎭 데모 모드: 지도 SDK 로드 생략');
+    return Promise.resolve();
+  }
 
   return new Promise((resolve, reject) => {
     if (window.kakao && window.kakao.maps) {
@@ -43,6 +58,17 @@ export async function loadKakaoMaps(): Promise<void> {
  * Search for places with keyword
  */
 export async function searchPlaces(keyword: string): Promise<any[]> {
+  // 데모 모드: 더미 데이터 반환
+  if (IS_DEMO_MODE) {
+    await new Promise(resolve => setTimeout(resolve, 300)); // 실제 API 호출처럼 지연
+    const filtered = MOCK_PLACES.filter(place =>
+      place.place_name.toLowerCase().includes(keyword.toLowerCase()) ||
+      place.address_name.toLowerCase().includes(keyword.toLowerCase())
+    );
+    console.log('🎭 데모 모드: 장소 검색 결과', filtered.length, '개');
+    return filtered;
+  }
+
   if (!window.kakao || !window.kakao.maps) {
     throw new Error('Kakao Maps not initialized');
   }
@@ -85,8 +111,31 @@ export async function getPlaceDetails(placeData: any): Promise<Place> {
 export async function getDirections(
   origin: Location,
   destination: Location,
-  transportMode: 'car' | 'transit' | 'walk' = 'transit'
+  transportMode: 'car' | 'transit' | 'walk' = 'transit',
+  originPlace?: Place,
+  destinationPlace?: Place
 ): Promise<any> {
+  // 데모 모드: 더미 경로 반환
+  if (IS_DEMO_MODE) {
+    await new Promise(resolve => setTimeout(resolve, 500)); // 실제 API 호출처럼 지연
+    const mockOrigin: Place = originPlace || {
+      id: 'origin',
+      name: '출발지',
+      address: '',
+      location: origin,
+      placeId: 'origin'
+    };
+    const mockDestination: Place = destinationPlace || {
+      id: 'dest',
+      name: '도착지',
+      address: '',
+      location: destination,
+      placeId: 'dest'
+    };
+    console.log('🎭 데모 모드: 경로 탐색 결과');
+    return createMockRoute(mockOrigin, mockDestination);
+  }
+
   try {
     // Kakao Mobility API를 사용한 경로 탐색
     let url = '';
@@ -164,6 +213,14 @@ export async function searchNearbyPlaces(
   radius: number,
   category: string
 ): Promise<Recommendation[]> {
+  // 데모 모드: 더미 추천 데이터 반환
+  if (IS_DEMO_MODE) {
+    await new Promise(resolve => setTimeout(resolve, 400)); // 실제 API 호출처럼 지연
+    const mockData = MOCK_RECOMMENDATIONS[category] || MOCK_RECOMMENDATIONS.tourist_attraction;
+    console.log('🎭 데모 모드: 주변 장소 검색 결과', mockData.length, '개');
+    return mockData;
+  }
+
   try {
     const categoryCode = mapCategoryToKakaoCode(category);
 
