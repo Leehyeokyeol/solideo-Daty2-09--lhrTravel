@@ -108,6 +108,28 @@ npm run build
 npm run preview
 ```
 
+## 🚀 배포하기
+
+이 앱을 별도의 웹사이트로 쉽게 배포할 수 있습니다!
+
+### ⚡ Vercel (가장 쉬움!)
+
+1. [vercel.com](https://vercel.com) 방문 및 GitHub 로그인
+2. **"Add New Project"** 클릭
+3. 저장소 선택 → **"Deploy"** 클릭
+4. 완료! 🎉
+
+👉 **자세한 배포 가이드**: [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md)
+
+### 다른 배포 옵션
+
+- **Netlify**: 드래그 앤 드롭으로 간편 배포
+- **Firebase Hosting**: Google 인프라 활용
+- **Cloudflare Pages**: 빠른 글로벌 CDN
+- **GitHub Pages**: GitHub Actions 자동 배포
+
+모든 플랫폼에서 **API 키 없이도 데모 모드로 작동**합니다!
+
 ## 라이선스
 
 Proprietary - All rights reserved
