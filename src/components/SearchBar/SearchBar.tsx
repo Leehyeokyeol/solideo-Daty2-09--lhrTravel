@@ -1,5 +1,5 @@
 import { MapPin, Navigation, Calendar, Clock } from 'lucide-react';
-import { PlaceSearch } from './PlaceSearch';
+import { KakaoPlaceSearch } from './KakaoPlaceSearch';
 import { useTravelStore } from '../../store/useTravelStore';
 import { TransportMode } from '../../types';
 
@@ -21,14 +21,14 @@ export function SearchBar() {
 
       {/* Origin and Destination */}
       <div className="grid md:grid-cols-2 gap-4">
-        <PlaceSearch
+        <KakaoPlaceSearch
           label="출발지"
           placeholder="출발 건물이나 주소를 입력하세요"
           value={origin}
           onChange={setOrigin}
           icon={<MapPin size={20} className="text-green-500" />}
         />
-        <PlaceSearch
+        <KakaoPlaceSearch
           label="도착지"
           placeholder="도착 건물이나 주소를 입력하세요"
           value={destination}

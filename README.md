@@ -6,7 +6,7 @@
 
 ### 🗺️ 스마트 경로 계획
 - 출발지-도착지 실시간 검색 및 자동완성
-- Google Maps 기반 정확한 위치 정보
+- Kakao Maps 기반 정확한 위치 정보 (한국 지역 특화)
 - 이동 경로 시각화 및 핀 마킹
 
 ### 🚌 실시간 대중교통 연계
@@ -30,7 +30,7 @@
 - **Styling**: Tailwind CSS
 - **State Management**: Zustand
 - **Build Tool**: Vite
-- **Maps Integration**: Google Maps JavaScript API
+- **Maps Integration**: Kakao Maps API (한국 지역 최적화)
 - **Icons**: Lucide React
 
 ## 시작하기
@@ -38,18 +38,20 @@
 ### 사전 요구사항
 
 - Node.js 18 이상
-- Google Maps API Key
+- Kakao Developers 계정
+- Kakao Maps API Keys (JavaScript 키 + REST API 키)
 
-### Google Maps API 설정
+### Kakao Maps API 설정
 
-1. [Google Cloud Console](https://console.cloud.google.com/)에 접속
-2. 새 프로젝트 생성 또는 기존 프로젝트 선택
-3. 다음 API 활성화:
-   - Maps JavaScript API
-   - Places API
-   - Directions API
-   - Geocoding API
-4. API 키 생성 및 복사
+1. [Kakao Developers](https://developers.kakao.com/)에 접속 및 로그인
+2. **내 애플리케이션** > **애플리케이션 추가하기** 클릭
+3. 앱 이름 입력 후 생성
+4. **앱 키** 탭에서 다음 키 복사:
+   - **JavaScript 키** (지도 표시용)
+   - **REST API 키** (장소 검색, 경로 탐색용)
+5. **플랫폼** 설정:
+   - 웹 플랫폼 추가
+   - 사이트 도메인 등록 (개발: `http://localhost:3000`)
 
 ### 설치
 
@@ -59,7 +61,9 @@ npm install
 
 # 환경 변수 설정
 cp .env.example .env
-# .env 파일에 Google Maps API Key 입력
+# .env 파일에 Kakao API Keys 입력
+# VITE_KAKAO_API_KEY=JavaScript 키
+# VITE_KAKAO_REST_API_KEY=REST API 키
 
 # 개발 서버 실행
 npm run dev

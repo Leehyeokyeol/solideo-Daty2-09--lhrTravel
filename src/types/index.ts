@@ -52,7 +52,7 @@ export interface RouteStep {
 }
 
 export interface Route {
-  legs: google.maps.DirectionsLeg[];
+  legs: any[];
   overview_polyline: string;
   summary: string;
   warnings: string[];
@@ -158,8 +158,8 @@ export interface PlaceSearchResult {
 }
 
 export interface DirectionsResult {
-  routes: google.maps.DirectionsRoute[];
-  status: google.maps.DirectionsStatus;
+  routes: any[];
+  status: string;
 }
 
 export interface PlacesNearbyResult {

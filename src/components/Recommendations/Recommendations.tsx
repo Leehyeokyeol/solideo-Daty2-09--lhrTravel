@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Sparkles, MapPin } from 'lucide-react';
 import { useTravelStore } from '../../store/useTravelStore';
-import { searchNearbyPlaces } from '../../services/googleMaps';
+import { searchNearbyPlaces } from '../../services/kakaoMaps';
 import { RecommendationCard } from './RecommendationCard';
 import { PreferencesSelector } from './PreferencesSelector';
 
@@ -14,11 +14,11 @@ export function Recommendations() {
   const [isSearching, setIsSearching] = useState(false);
 
   const categories = [
-    { id: 'tourist_attraction', name: '관광지', icon: '🏛️', types: ['tourist_attraction', 'point_of_interest'] },
-    { id: 'restaurant', name: '맛집', icon: '🍽️', types: ['restaurant', 'cafe'] },
-    { id: 'shopping', name: '쇼핑', icon: '🛍️', types: ['shopping_mall', 'store'] },
-    { id: 'nature', name: '자연', icon: '🌳', types: ['park', 'natural_feature'] },
-    { id: 'culture', name: '문화', icon: '🎭', types: ['museum', 'art_gallery', 'theater'] },
+    { id: 'tourist_attraction', name: '관광지', icon: '🏛️', types: 'AT4' },
+    { id: 'restaurant', name: '맛집', icon: '🍽️', types: 'FD6' },
+    { id: 'cafe', name: '카페', icon: '☕', types: 'CE7' },
+    { id: 'shopping', name: '쇼핑', icon: '🛍️', types: 'MT1' },
+    { id: 'culture', name: '문화', icon: '🎭', types: 'CT1' },
   ];
 
   // Search for recommendations when destination or category changes

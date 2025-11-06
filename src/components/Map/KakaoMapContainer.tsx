@@ -1,10 +1,10 @@
 import { useRef, useEffect } from 'react';
-import { useGoogleMaps } from '../../hooks/useGoogleMaps';
+import { useKakaoMaps } from '../../hooks/useKakaoMaps';
 import { useTravelStore } from '../../store/useTravelStore';
-import { getDirections } from '../../services/googleMaps';
+import { getDirections } from '../../services/kakaoMaps';
 import { TransportMode } from '../../types';
 
-export function MapContainer() {
+export function KakaoMapContainer() {
   const mapRef = useRef<HTMLDivElement>(null);
   const {
     map,
@@ -12,12 +12,12 @@ export function MapContainer() {
     error,
     addMarker,
     clearMarkers,
-    showDirections,
+    showPolyline,
     fitBounds,
-  } = useGoogleMaps(mapRef);
+  } = useKakaoMaps(mapRef);
 
   const { tripDetails, setCurrentRoute, setError: setStoreError } = useTravelStore();
-  const { origin, destination, transportMode, departureTime } = tripDetails;
+  const { origin, destination, transportMode } = tripDetails;
 
   // Update markers when origin/destination changes
   useEffect(() => {
@@ -25,50 +25,32 @@ export function MapContainer() {
 
     clearMarkers();
 
-    const locations: google.maps.LatLngLiteral[] = [];
+    const locations: { lat: number; lng: number }[] = [];
 
-    // Add origin marker
+    // Add origin marker (녹색)
     if (origin) {
       addMarker(
         { lat: origin.location.lat, lng: origin.location.lng },
         {
-          label: {
-            text: 'A',
-            color: 'white',
-            fontSize: '14px',
-            fontWeight: 'bold',
-          },
           icon: {
-            path: google.maps.SymbolPath.CIRCLE,
+            url: createCustomMarker('출발', '#22c55e'),
             scale: 20,
             fillColor: '#22c55e',
-            fillOpacity: 1,
-            strokeColor: 'white',
-            strokeWeight: 3,
           },
         }
       );
       locations.push({ lat: origin.location.lat, lng: origin.location.lng });
     }
 
-    // Add destination marker
+    // Add destination marker (빨간색)
     if (destination) {
       addMarker(
         { lat: destination.location.lat, lng: destination.location.lng },
         {
-          label: {
-            text: 'B',
-            color: 'white',
-            fontSize: '14px',
-            fontWeight: 'bold',
-          },
           icon: {
-            path: google.maps.SymbolPath.CIRCLE,
+            url: createCustomMarker('도착', '#ef4444'),
             scale: 20,
             fillColor: '#ef4444',
-            fillOpacity: 1,
-            strokeColor: 'white',
-            strokeWeight: 3,
           },
         }
       );
@@ -90,69 +72,59 @@ export function MapContainer() {
         setStoreError(null);
 
         // Convert transport mode
-        let gmapsTravelMode: google.maps.TravelMode;
+        let kakaoMode: 'car' | 'transit' | 'walk';
         switch (transportMode) {
           case TransportMode.DRIVING:
-            gmapsTravelMode = google.maps.TravelMode.DRIVING;
+            kakaoMode = 'car';
             break;
           case TransportMode.WALKING:
-            gmapsTravelMode = google.maps.TravelMode.WALKING;
-            break;
           case TransportMode.BICYCLING:
-            gmapsTravelMode = google.maps.TravelMode.BICYCLING;
+            kakaoMode = 'walk';
             break;
           case TransportMode.TRANSIT:
           default:
-            gmapsTravelMode = google.maps.TravelMode.TRANSIT;
+            kakaoMode = 'transit';
             break;
         }
 
         const result = await getDirections(
           origin.location,
           destination.location,
-          gmapsTravelMode,
-          departureTime || undefined
+          kakaoMode
         );
 
-        if (result.routes.length > 0) {
+        if (result.routes && result.routes.length > 0) {
           const route = result.routes[0];
-          const leg = route.legs[0];
+          const summary = route.summary;
 
           // Create route object
           setCurrentRoute({
-            legs: route.legs,
-            overview_polyline: route.overview_polyline.toString(),
-            summary: route.summary,
-            warnings: route.warnings,
-            distance: leg.distance?.text || '',
-            duration: leg.duration?.text || '',
-            steps: leg.steps.map((step) => ({
-              instruction: step.instructions,
-              distance: step.distance?.text || '',
-              duration: step.duration?.text || '',
-              travelMode: step.travel_mode as any,
-              transitDetails: step.transit
-                ? {
-                    line: step.transit.line?.name || '',
-                    departureTime: step.transit.departure_time?.text || '',
-                    arrivalTime: step.transit.arrival_time?.text || '',
-                    numStops: step.transit.num_stops || 0,
-                    vehicle: {
-                      name: step.transit.line?.vehicle?.name || '',
-                      type: step.transit.line?.vehicle?.type as any,
-                      icon: step.transit.line?.vehicle?.icon || '',
-                    },
-                  }
-                : undefined,
-            })),
+            legs: [],
+            overview_polyline: '',
+            summary: route.summary?.origin?.name || '추천 경로',
+            warnings: [],
+            distance: `${(summary.distance / 1000).toFixed(1)}km`,
+            duration: `${Math.round(summary.duration / 60)}분`,
+            steps: route.sections?.map((section: any, idx: number) => ({
+              instruction: section.roads?.[0]?.name || `구간 ${idx + 1}`,
+              distance: `${(section.distance / 1000).toFixed(1)}km`,
+              duration: `${Math.round(section.duration / 60)}분`,
+              travelMode: transportMode,
+            })) || [],
           });
 
-          // Show directions on map
-          showDirections(result);
+          // Draw polyline on map
+          if (route.sections) {
+            const path: { lat: number; lng: number }[] = [];
+            // 시작점과 끝점만 연결 (상세 경로 데이터가 없을 경우)
+            path.push(origin.location);
+            path.push(destination.location);
+            showPolyline(path);
+          }
         }
       } catch (err) {
         console.error('Failed to get directions:', err);
-        setStoreError('경로를 찾을 수 없습니다. 다른 경로를 시도해보세요.');
+        setStoreError('경로를 찾을 수 없습니다. 잠시 후 다시 시도해주세요.');
       }
     };
 
@@ -161,9 +133,8 @@ export function MapContainer() {
     origin,
     destination,
     transportMode,
-    departureTime,
     isLoaded,
-    showDirections,
+    showPolyline,
     setCurrentRoute,
     setStoreError,
   ]);
@@ -192,4 +163,17 @@ export function MapContainer() {
       )}
     </div>
   );
+}
+
+// Helper function to create custom marker
+function createCustomMarker(text: string, color: string): string {
+  const svg = `
+    <svg width="50" height="60" xmlns="http://www.w3.org/2000/svg">
+      <g>
+        <circle cx="25" cy="25" r="20" fill="${color}" stroke="white" stroke-width="3"/>
+        <text x="25" y="30" font-size="12" font-weight="bold" fill="white" text-anchor="middle">${text}</text>
+      </g>
+    </svg>
+  `;
+  return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
 }

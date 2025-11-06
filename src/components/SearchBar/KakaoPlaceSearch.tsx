@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { MapPin, X, Loader2 } from 'lucide-react';
-import { searchPlaces, getPlaceDetails } from '../../services/googleMaps';
+import { searchPlaces, getPlaceDetails } from '../../services/kakaoMaps';
 import { useDebounce } from '../../hooks/useDebounce';
 import { Place } from '../../types';
 
@@ -12,7 +12,7 @@ interface PlaceSearchProps {
   icon?: React.ReactNode;
 }
 
-export function PlaceSearch({
+export function KakaoPlaceSearch({
   label,
   placeholder,
   value,
@@ -20,7 +20,7 @@ export function PlaceSearch({
   icon,
 }: PlaceSearchProps) {
   const [input, setInput] = useState('');
-  const [predictions, setPredictions] = useState<google.maps.places.AutocompletePrediction[]>([]);
+  const [predictions, setPredictions] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -51,12 +51,12 @@ export function PlaceSearch({
   }, [debouncedInput]);
 
   // Handle place selection
-  const handleSelect = async (prediction: google.maps.places.AutocompletePrediction) => {
+  const handleSelect = async (prediction: any) => {
     setIsLoading(true);
     setShowDropdown(false);
 
     try {
-      const place = await getPlaceDetails(prediction.place_id);
+      const place = await getPlaceDetails(prediction);
       onChange(place);
       setInput(place.name);
     } catch (error) {
@@ -131,20 +131,25 @@ export function PlaceSearch({
             onClick={() => setShowDropdown(false)}
           />
           <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto">
-            {predictions.map((prediction) => (
+            {predictions.map((prediction, index) => (
               <button
-                key={prediction.place_id}
+                key={prediction.id || index}
                 onClick={() => handleSelect(prediction)}
                 className="w-full px-4 py-3 text-left hover:bg-gray-50 transition flex items-start gap-3 border-b border-gray-100 last:border-b-0"
               >
                 <MapPin size={18} className="text-primary-500 flex-shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium text-gray-900 truncate">
-                    {prediction.structured_formatting.main_text}
+                    {prediction.place_name}
                   </p>
                   <p className="text-sm text-gray-500 truncate">
-                    {prediction.structured_formatting.secondary_text}
+                    {prediction.address_name || prediction.road_address_name}
                   </p>
+                  {prediction.category_name && (
+                    <p className="text-xs text-gray-400 truncate mt-0.5">
+                      {prediction.category_name}
+                    </p>
+                  )}
                 </div>
               </button>
             ))}
